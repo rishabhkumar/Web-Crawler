@@ -1,0 +1,196 @@
+import javax.swing.*;
+import java.awt.event.*;
+import java.awt.*;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+import org.jsoup.nodes.Element;
+import java.util.*;
+import java.net.*;
+import java.io.*;
+
+public class Temp328 implements ActionListener
+{
+    ArrayList<String> al, al1;
+    JFrame f1;
+    JLabel l1, l2,l4, l5;
+    JTextField tf1, tf2, l6;
+    JButton b1, b2, b3, b4;
+    String url;
+    JTextArea l3;
+    JScrollPane sp;
+    
+    public Temp328()
+    {
+	f1 = new JFrame("Image Downloader");
+	initialFrame();
+	f1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	f1.setSize(400, 400);
+	f1.setLayout(null);
+	f1.setVisible(true);
+    }
+
+    public void initialFrame()
+    {
+	//f1.removeAll();
+	l1 = new JLabel("Enter the URL");
+	l1.setBounds(70, 200, 100, 30);
+	f1.add(l1);
+	tf1 = new JTextField();
+	tf1.setBounds(180, 200, 150, 30);
+	f1.add(tf1);
+	b1 = new JButton("Fetch Data");
+	b1.addActionListener(this);
+	b1.setBounds(200, 250, 100, 30);
+	f1.add(b1);
+	l2 = new JLabel();
+	l2.setBounds(200, 300, 190, 30);
+	f1.add(l2);
+    }
+
+    public void downloadFrame()
+    {
+	f1.setSize(800, 800);
+	l1 = new JLabel("<html><b>URL : <i><u>" + url + "</u></i></b></html>");
+	l1.setBounds(10, 10, 250, 30);
+	f1.add(l1);
+	l2 = new JLabel("Images Links");
+	l2.setBounds(50, 50, 100, 30);
+	f1.add(l2);
+	l3 = new JTextArea();
+	//l3.setBounds(10, 100, 390, 690);
+	//f1.add(l3);
+	sp = new JScrollPane(l3);
+	sp.setBounds(10, 100, 390, 690);
+	f1.add(sp);
+	b3 = new JButton("Download Images");
+	b3.addActionListener(this);
+	b3.setBounds(620, 400, 150, 30);
+	f1.add(b3);
+	tf2 = new JTextField();
+	tf2.setBounds(600, 350, 200, 30);
+	f1.add(tf2);
+	l4 = new JLabel("Destination Folder");
+	l4.setBounds(450, 350, 140, 30);
+	f1.add(l4);
+	l5 = new JLabel("Recently Downloaded");
+	l5.setBounds(450, 500, 150, 30);
+	f1.add(l5);
+	l6 = new JTextField();
+	l6.setBounds(620, 500, 100, 30);
+	f1.add(l6);
+	b4 = new JButton("Back");
+	b4.addActionListener(this);
+	b4.setBounds(720, 10, 70, 30);
+	f1.add(b4);
+    }
+    
+    public void actionPerformed(ActionEvent e)
+    {
+	if(e.getSource() == b1)
+	    {
+		al = new ArrayList<String>();
+		url = tf1.getText();
+		try
+		    {
+			Document doc = Jsoup.connect(url).get();
+			Elements images = doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]");
+			for(Element ele : images)
+			    {
+				al.add(ele.attr("src"));
+			    }
+			l2.setText("<html><font color = 'green'>" + al.size() + " Images Found!" + "</font></html>");
+			b2 = new JButton("Download Process ");
+			b2.setBounds(150, 320, 200, 30);
+			b2.addActionListener(this);
+			f1.add(b2);
+			f1.setVisible(false);
+			f1.setVisible(true);
+		    }
+		catch(Exception ee)
+		    {
+			ee.printStackTrace();
+			l2.setText("<html><font color = 'red'>Wrong URL!</font></html>");
+			f1.remove(b2);
+			b2 = null;
+		    }
+	    }
+	
+	if(e.getSource() == b2)
+	    {
+		al1 = new ArrayList<String>();
+		f1.getContentPane().removeAll();
+		downloadFrame();
+		String global = new String();
+		for(String str : al)
+		    {
+			if(!str.substring(0, 4).equals("http"))
+			    {
+				String temp = str;
+				str = url + "/" + temp;
+			    }
+			al1.add(str);
+			global += (str + "\n");
+		    }
+		System.out.println(al1);
+		l3.setText(global);
+	    }
+
+	if(e.getSource() == b3)
+	    {
+		try
+		    {
+			downloadImages();
+		    }
+		catch(Exception eee)
+		    {
+			eee.printStackTrace();
+		    }
+	    }
+
+	if(e.getSource() == b4)
+	    {
+		f1.removeAll();
+		f1.setSize(400, 400);
+		initialFrame();
+		f1.setVisible(false);
+		f1.setVisible(true);
+	    }
+    }
+
+    public void downloadImages() throws Exception
+    {
+	String des = tf2.getText();
+	for(String ss : al1)
+	    {
+		int ii;
+		URL url1 = new URL(ss);
+		for(ii = ss.length()-1; ss.charAt(ii) != '/'; ii--)
+		    {
+		    }
+		String name = ss.substring(ii+1, ss.length());
+		//System.out.println(name);
+		//l6.setText(name);
+		display(name);
+		InputStream in = new BufferedInputStream(url1.openStream());
+		OutputStream out = new BufferedOutputStream(new FileOutputStream(new File(des + "/" + name)));
+		for(int i; (i = in.read()) != -1; )
+		    {
+			out.write(i);
+		    }
+		in.close();
+		out.close();
+	    }
+    }
+
+    public void display(String name)
+    {
+	l6.setText(name);
+	System.out.println(name);
+    }
+
+    public static void main(String... s)
+    {
+	new Temp328();
+    }
+}
